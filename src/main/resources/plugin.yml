@@ -1,0 +1,16 @@
+name: EpicCommandsFilter
+version: ${project.version}
+main: io.github.divios.epic_tabcompletefilter.EpicCommandsFilter
+api-version: 1.13
+authors: [ divios ]
+description: Filter the commands a user can see in tab complete with an in-game GUI
+commands:
+  epicTabCompleteFilter:
+    description: opens groups gui
+    default: false
+    aliases: [etcf, epic_tcf]
+    usage: /etcf
+
+permissions:
+  etcf.open:
+    default: op
