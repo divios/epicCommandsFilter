@@ -27,6 +27,10 @@ public class guiManager {
             return GroupsGui.getInventory();
     }
 
+    public void openCustomCmdsGui(Player p) {
+        new customCmdsGui(p);
+    }
+
     public void openCommandsGui(Player p, String grouid) {
         new commandsGui(p, grouid);
     }

@@ -6,11 +6,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerCommandSendEvent;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 public class listener implements Listener {
@@ -46,10 +44,17 @@ public class listener implements Listener {
         Player p = e.getPlayer();
         if(p.isOp()) return;
         for(Map.Entry<String, List<String>> entry: dbManager.getFilters().entrySet()) {
-            if(!p.hasPermission("etcf." + entry.getKey())) continue;
-            newCommands.addAll(e.getCommands()
-                    .stream().filter(s -> entry.getValue().stream().noneMatch(s::contains))
-                    .collect(Collectors.toList()));
+            if(!p.hasPermission("ecf." + entry.getKey())) continue;
+            for (String s: e.getCommands()) {
+                boolean contains = false;
+                for(String list: entry.getValue()) {
+                    if(s.toLowerCase(Locale.ROOT).startsWith(list)) {
+                        contains = true;
+                        break;
+                    }
+                }
+            if(!contains) newCommands.add(s);
+            }
         }
         if(newCommands.isEmpty()) return;
         e.getCommands().clear();

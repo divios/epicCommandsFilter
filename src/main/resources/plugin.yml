@@ -5,12 +5,12 @@ api-version: 1.13
 authors: [ divios ]
 description: Filter the commands a user can see in tab complete with an in-game GUI
 commands:
-  epicTabCompleteFilter:
+  epicCommandsFilter:
     description: opens groups gui
     default: false
-    aliases: [etcf, epic_tcf]
-    usage: /etcf
+    aliases: [ecf]
+    usage: /ecf
 
 permissions:
-  etcf.open:
+  ecf.open:
     default: op

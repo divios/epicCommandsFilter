@@ -4,17 +4,23 @@ import io.github.divios.epic_tabcompletefilter.EpicCommandsFilter;
 import io.github.divios.epic_tabcompletefilter.databaseUtils.databaseManager;
 import io.github.divios.epic_tabcompletefilter.utils;
 import io.github.divios.epic_tabcompletefilter.xseries.XMaterial;
+import net.wesjd.anvilgui.AnvilGUI;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 
 public class commandsGui implements Listener, InventoryHolder {
 
@@ -29,6 +35,7 @@ public class commandsGui implements Listener, InventoryHolder {
     private final ItemStack previous = new ItemStack(Material.ARROW);
     private final ItemStack addAll = new ItemStack(Material.REDSTONE_BLOCK);
     private final ItemStack removeAll = XMaterial.LIGHT_BLUE_STAINED_GLASS.parseItem();
+    private boolean isSearch = false;
 
     public commandsGui(Player p, String groupId, int page) {
         this.p = p;
@@ -43,6 +50,24 @@ public class commandsGui implements Listener, InventoryHolder {
         this.p = p;
         this.groupId = groupId;
         this.commandList = utils.getKnownCommands();
+        init();
+        p.openInventory(invs.get(0));
+    }
+
+    public commandsGui(Player p, String groupId, int page, boolean isSearch, List<String> commands){
+        this.p = p;
+        this.groupId = groupId;
+        this.isSearch = isSearch;
+        commandList = commands;
+        init();
+        p.openInventory(invs.get(page));
+    }
+
+    public commandsGui(Player p, String groupId, boolean isSearch, List<String> commands){
+        this.p = p;
+        this.groupId = groupId;
+        this.isSearch = isSearch;
+        commandList = commands;
         init();
         p.openInventory(invs.get(0));
     }
@@ -79,6 +104,19 @@ public class commandsGui implements Listener, InventoryHolder {
         ItemStack backItem = XMaterial.OAK_SIGN.parseItem();   //back button
         utils.setDisplayName(backItem, "&c&lReturn");
         utils.setLore(backItem, Arrays.asList("&7Click to go back"));
+
+        ItemStack search = null;
+        if(!isSearch) {
+            search = XMaterial.COMPASS.parseItem();
+            utils.setDisplayName(search, "&b&lSearch");
+            utils.setLore(search, Arrays.asList("&7Click to search item"));
+        } else {
+            search = XMaterial.REDSTONE_BLOCK.parseItem();
+            utils.setDisplayName(search, "&c&lCancel search");
+            utils.setLore(search, Arrays.asList("&7Click to cancel searcg"));
+        }
+
+        inv.setItem(51, search);
 
         inv.setItem(49, backItem);
         inv.setItem(46, removeAll);
@@ -157,6 +195,37 @@ public class commandsGui implements Listener, InventoryHolder {
             new commandsGui(p, groupId);
         }
 
+        if(e.getSlot() == 51) {
+            if(e.getCurrentItem().getType() == XMaterial.REDSTONE_BLOCK.parseMaterial()) {
+                new commandsGui(p, groupId);
+            } else {
+                final List<String> lists = new ArrayList<>();
+                new AnvilGUI.Builder()
+                        .onClose(player -> {
+                            utils.runTaskLater(() -> {
+                                new commandsGui(player, groupId, true, lists);
+                            }, 1L);
+                        })
+                        .onComplete((player, text) -> {
+
+                            List<String> lists2 = new ArrayList<>();
+                            for(String s: dbManager.getFilters().get(groupId)) {
+                                if(s.toLowerCase().startsWith(text.toLowerCase())) {
+                                    lists2.add(s);
+                                }
+                            }
+                            lists.addAll(lists2);
+                            return AnvilGUI.Response.close();
+
+                        })
+                        .text("Insert text to search")
+                        .itemLeft(new ItemStack(XMaterial.COMPASS.parseMaterial()))
+                        .title(ChatColor.GOLD + "" + ChatColor.BOLD + "Insert text to search")
+                        .plugin(main)
+                        .open(p);
+            }
+        }
+
         ItemStack item = e.getCurrentItem();
         String str = utils.trimString(item.getItemMeta().getDisplayName());
 
@@ -169,6 +238,12 @@ public class commandsGui implements Listener, InventoryHolder {
             dbManager.getFilters().get(groupId).remove(str);
             item.setType(XMaterial.LIGHT_BLUE_STAINED_GLASS_PANE.parseMaterial());
         }
+    }
+
+    @EventHandler
+    public void onDragEvent(InventoryDragEvent e) {
+        if(e.getView().getTopInventory().getHolder() != this) return;
+        e.setCancelled(true);
     }
 
 }

@@ -15,14 +15,14 @@ public class commands implements CommandExecutor {
     public static void registerCommands() {
         instance = new commands();
         Guimanager = guiManager.getInstance();
-        main.getCommand("epicTabCompleteFilter").setExecutor(instance);
+        main.getCommand("epicCommandsFilter").setExecutor(instance);
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if(!(sender instanceof Player)) return true;
 
-        if(!sender.hasPermission("etcf.open")) {
+        if(!sender.hasPermission("ecf.open")) {
             sender.sendMessage(utils.formatString("&b&lEpicCommandsFilter > &7You dont have permissions"));
             return true;
         }

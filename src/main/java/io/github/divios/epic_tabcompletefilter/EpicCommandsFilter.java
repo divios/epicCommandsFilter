@@ -25,7 +25,7 @@ public final class EpicCommandsFilter extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        databaseManager.getInstance().saveAllSyncFilters();
+        databaseManager.getInstance().saveAllFilters();
     }
 
     public static EpicCommandsFilter getInstance() { return main; }

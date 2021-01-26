@@ -1,5 +1,6 @@
 package io.github.divios.epic_tabcompletefilter;
 
+import io.github.divios.epic_tabcompletefilter.databaseUtils.databaseManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -64,6 +65,10 @@ public class utils {
         Bukkit.getScheduler().runTask(main, runnable);
     }
 
+    public static void runTaskLater(Runnable r, Long ticks) {
+        Bukkit.getScheduler().runTaskLater(main, r, ticks);
+    }
+
     public static List<String> getKnownCommands() {
         SimplePluginManager spm = (SimplePluginManager) Bukkit.getPluginManager();
 
@@ -74,9 +79,14 @@ public class utils {
             commandMap.setAccessible(true);
             knownCommands.setAccessible(true);
 
-            return new ArrayList<> ( ((Map<String, Command>) knownCommands.get(commandMap.get(spm))).values())
-                    .stream().map(command -> command.getName().toLowerCase(Locale.ROOT)).distinct().sorted(String.CASE_INSENSITIVE_ORDER).collect(Collectors.toList());
+            List<String> commands = new LinkedList<>(Arrays.asList("bukkit", "?", "pl", "vvbukkit", "ver", "about", "ecf"));
+            commands.addAll(databaseManager.getInstance().getAddedCommands());                                                              /* Adds the custon cmds */
+            commands.addAll(((Map<String, Command>) knownCommands.get(commandMap.get(spm))).values()
+                    .stream().map(command -> command.getName().toLowerCase(Locale.ROOT)).collect(Collectors.toList()));                     /* Adds commands names */
+            ((Map<String, Command>) knownCommands.get(commandMap.get(spm))).values().stream().forEach(command ->
+                    command.getAliases().stream().forEach(s -> commands.add(s.toLowerCase(Locale.ROOT))));                                  /* Adds aliases */
 
+            return new LinkedList<>(commands.stream().distinct().sorted(String.CASE_INSENSITIVE_ORDER).collect(Collectors.toList()));       /* Sorts list and deletes repeated */
 
         } catch(NoSuchFieldException | IllegalAccessException e) {
             e.printStackTrace();

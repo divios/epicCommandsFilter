@@ -18,6 +18,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class groupsGui implements Listener, InventoryHolder {
@@ -30,8 +31,10 @@ public class groupsGui implements Listener, InventoryHolder {
         Inventory inv = Bukkit.createInventory(this, 54, utils.formatString("&c&lGroups manager"));
 
         ItemStack newGroup = new ItemStack(Material.ANVIL);
-        utils.setDisplayName(newGroup, "&6&lAdd new Group");
-        utils.setLore(newGroup, Arrays.asList("&7Click to add a new group"));
+        utils.setDisplayName(newGroup, "&6&lAdd new Command");
+        utils.setLore(newGroup, Arrays.asList("&7Even though the plugin does most of", "&7the dirty work for you, is",
+                "&7not perfect and cannot hook to", "&7all commands. If you want to add a new command",
+                "&7that does not appear on the default list", "&7then click here"));
 
         ItemStack exit = new ItemStack(Material.OAK_SIGN);
         utils.setDisplayName(exit, "&c&lExit");
@@ -40,6 +43,14 @@ public class groupsGui implements Listener, InventoryHolder {
         utils.setDisplayName(reloadCommands, "&6&lReload Commands");
         utils.setLore(reloadCommands, Arrays.asList("&7Click reload and apply",
                 "&7all changes to players"));
+
+        ItemStack info = XMaterial.BOOK.parseItem();
+        utils.setDisplayName(info, "&b&lWhat is this?");
+        utils.setLore(info, Arrays.asList("&7This menu displays all the current groups",
+                "&7the plugin has. To attach a player to a group", "&7just give them the permission: &becf.{group}&7,",
+                "&7being {group} the name of the group", "", "&7Note: a player can belong to several groups",
+                "&7at the same time, but can cause conflicts, be aware", "","&7To add a new group just click",
+                "&7on an empty slot"));
 
         ItemStack aux = XMaterial.GREEN_STAINED_GLASS_PANE.parseItem();
         int slot = 0;
@@ -51,6 +62,7 @@ public class groupsGui implements Listener, InventoryHolder {
             slot++;
         }
 
+        inv.setItem(45, info);
         inv.setItem(47, reloadCommands);
         inv.setItem(49, exit);
         inv.setItem(51, newGroup);
@@ -63,13 +75,28 @@ public class groupsGui implements Listener, InventoryHolder {
         if(e.getView().getTopInventory().getHolder() != this) return;
         e.setCancelled(true);
 
-        if(e.getSlot() != e.getRawSlot() || utils.isEmpty(e.getCurrentItem())) return;
+        if(e.getSlot() != e.getRawSlot()) return;
         Player p = (Player) e.getWhoClicked();
 
+        if(e.getSlot() == 46 || e.getSlot() == 48 || e.getSlot() == 50 ||
+                e.getSlot() == 52 || e.getSlot() == 53 || e.getSlot() == -999) return;
+
         if(e.getSlot() == 51) {
+            guiManager.getInstance().openCustomCmdsGui(p);
+            return;
+        }
+
+        if(e.getSlot() == 49) { p.closeInventory(); return; }
+
+        if(e.getSlot() == 47) {
+            utils.updateAllPlayersCommands();
+            p.sendMessage(utils.formatString("&b&lEpicCommandsFilter > &7Reloaded all commands"));
+            return; }
+
+        if(utils.isEmpty(e.getCurrentItem())) {
             new AnvilGUI.Builder()
                     .onClose(player -> {                                        //called when the inventory is closing
-                        Bukkit.getScheduler().runTaskLater(main, () -> p.openInventory(getInventory()), 1);
+                        utils.runTaskLater(() -> p.openInventory(getInventory()), 1L);
                     })
                     .onComplete((player, text) -> {                             //called when the inventory output slot is clicked
                         if(text.isEmpty()) {
@@ -85,13 +112,6 @@ public class groupsGui implements Listener, InventoryHolder {
                     .open(p);
             return;
         }
-
-        if(e.getSlot() == 49) { p.closeInventory(); return; }
-
-        if(e.getSlot() == 47) {
-            utils.updateAllPlayersCommands();
-            p.sendMessage(utils.formatString("&b&lEpicCommandsFilter > &7Reloaded all commands"));
-            return; }
 
         if(e.isLeftClick()) {
             String groupstr = utils.trimString(e.getCurrentItem().getItemMeta().getDisplayName());
