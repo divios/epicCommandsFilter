@@ -121,7 +121,11 @@ public class databaseManager {
     }
 
     public HashMap<String, List<String>> getFilters() {
-        return filters;
+        HashMap<String, List<String>> aux = new HashMap<>(filters);
+        for(Map.Entry<String, List<String>> entry : aux.entrySet()) {
+            entry.getValue().remove("abosurdXboboq");
+        }
+        return aux;
     }
 
     public ArrayList<String> getAddedCommands() {
@@ -129,7 +133,9 @@ public class databaseManager {
     }
 
     public void createNewGroup(String group) {
-        filters.put(group, new ArrayList<>());
+        List<String> aux = new ArrayList<>();
+        aux.add("abosurdXboboq");
+        filters.put(group, aux);
     }
 
 }

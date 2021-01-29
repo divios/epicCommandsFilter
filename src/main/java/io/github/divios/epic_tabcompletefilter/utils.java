@@ -79,7 +79,7 @@ public class utils {
             commandMap.setAccessible(true);
             knownCommands.setAccessible(true);
 
-            List<String> commands = new LinkedList<>(Arrays.asList("bukkit", "?", "pl", "vvbukkit", "ver", "about", "ecf"));
+            List<String> commands = new LinkedList<>(Arrays.asList("bukkit", "?", "pl", "vvbukkit", "ver", "about", "ecf", "minecraft"));
             commands.addAll(databaseManager.getInstance().getAddedCommands());                                                              /* Adds the custon cmds */
             commands.addAll(((Map<String, Command>) knownCommands.get(commandMap.get(spm))).values()
                     .stream().map(command -> command.getName().toLowerCase(Locale.ROOT)).collect(Collectors.toList()));                     /* Adds commands names */

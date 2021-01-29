@@ -23,8 +23,8 @@ public class guiManager {
         Bukkit.getPluginManager().registerEvents(GroupsGui, main);
     }
 
-    public Inventory getGroupsGui() {
-            return GroupsGui.getInventory();
+    public void openGroupsGui(Player p) {
+            p.openInventory(GroupsGui.getInventory());
     }
 
     public void openCustomCmdsGui(Player p) {

@@ -33,7 +33,7 @@ public class groupsGui implements Listener, InventoryHolder {
         ItemStack newGroup = new ItemStack(Material.ANVIL);
         utils.setDisplayName(newGroup, "&6&lAdd new Command");
         utils.setLore(newGroup, Arrays.asList("&7Even though the plugin does most of", "&7the dirty work for you, is",
-                "&7not perfect and cannot hook to", "&7all commands. If you want to add a new command",
+                "&7not perfect and cannot hook to", "&7all commands.", "", "&7If you want to add a new command",
                 "&7that does not appear on the default list", "&7then click here"));
 
         ItemStack exit = new ItemStack(Material.OAK_SIGN);

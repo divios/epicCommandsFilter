@@ -28,7 +28,7 @@ public class commands implements CommandExecutor {
         }
 
         Player p = (Player) sender;
-        p.openInventory(Guimanager.getGroupsGui());
+        Guimanager.openGroupsGui(p);
 
         return true;
     }
