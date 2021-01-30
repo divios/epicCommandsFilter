@@ -3,6 +3,7 @@ package io.github.divios.epic_tabcompletefilter.builders;
 import io.github.divios.epic_tabcompletefilter.EpicCommandsFilter;
 import io.github.divios.epic_tabcompletefilter.utils;
 import io.github.divios.epic_tabcompletefilter.xseries.XMaterial;
+import net.wesjd.anvilgui.AnvilGUI;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -26,13 +27,14 @@ public class dynamicGui implements InventoryHolder, Listener {
     private EpicCommandsFilter main = EpicCommandsFilter.getInstance();
 
     private final Player p;
-    private final Supplier<List<ItemStack>> contentS;
+    private final contentX contentX;
     private final Function<Integer, String> title;
     private final Consumer<Player> back;
     private final Integer rows2fill;
     private final Function<ItemStack, Response> contentAction;
     private final Function<Integer, Response> nonContentAction;
     private final BiConsumer<Inventory, Integer> addItems;
+    private final boolean searchOn;
     private final boolean isSearch;
     private final Integer page;
 
@@ -40,25 +42,27 @@ public class dynamicGui implements InventoryHolder, Listener {
 
     private dynamicGui(
             Player p,
-            Supplier<List<ItemStack>> contentS,
+            contentX contentX,
             Function<Integer, String> title,
             Consumer<Player> back,
             Integer rows2fill,
             Function<ItemStack, Response> contentAction,
             Function<Integer, Response> nonContentAction,
             BiConsumer<Inventory, Integer> addItems,
+            boolean searchOn,
             boolean isSearch,
             Integer page
 
     ) {
         this.p = p;
-        this.contentS = contentS;
+        this.contentX = contentX;
         this.title = title;
         this.back = back;
         this.rows2fill = rows2fill;
         this.contentAction = contentAction;
         this.nonContentAction = nonContentAction;
         this.addItems = addItems;
+        this.searchOn = searchOn;
         this.isSearch = isSearch;
         this.page = page;
 
@@ -69,10 +73,20 @@ public class dynamicGui implements InventoryHolder, Listener {
 
     }
 
+    private static class contentX{
+        public Supplier<List<ItemStack>> contentS;
+        public List<ItemStack> searchContent;
+
+        public contentX(Supplier contentS) {
+            this.contentS = contentS;
+        }
+    }
 
     private void createStructure() {
 
-        List<ItemStack> content = contentS.get();
+        List<ItemStack> content;
+        if(!isSearch) content = contentX.contentS.get();
+        else content = contentX.searchContent;
 
         double nD = content.size() / Double.valueOf(rows2fill);
         int n = (int) Math.ceil(nD);
@@ -92,7 +106,10 @@ public class dynamicGui implements InventoryHolder, Listener {
     }
 
     private Inventory createSingleInv(int page, int pos) {
-        List<ItemStack> content = contentS.get();
+        List<ItemStack> content;
+        if(!isSearch) content = contentX.contentS.get();
+        else content = contentX.searchContent;
+
         int slot = 0;
         Inventory returnGui = Bukkit.createInventory(this, 54, utils.formatString(title.apply(page)));
 
@@ -154,11 +171,44 @@ public class dynamicGui implements InventoryHolder, Listener {
         inv.setItem(45, previous);
     }
 
+    private void searchAction(ItemStack item) {
+        if(item.getType() == XMaterial.REDSTONE_BLOCK.parseMaterial()) {
+            new dynamicGui(p, contentX, title, back, rows2fill, contentAction,
+                    nonContentAction, addItems, searchOn, false, page);
+        } else {
+            final List<ItemStack> lists = new ArrayList<>();
+            new AnvilGUI.Builder()
+                    .onClose(player -> {
+                        utils.runTaskLater(() -> {
+                            new dynamicGui(p, contentX, title, back, rows2fill, contentAction,
+                                    nonContentAction, addItems, searchOn, true, page);
+                        }, 1L);
+                    })
+                    .onComplete((player, text) -> {
+
+                        for(ItemStack s: contentX.contentS.get()) {
+                            String name = utils.trimString(s.getItemMeta().getDisplayName());
+                            if(name.toLowerCase().startsWith(text.toLowerCase())) {
+                                lists.add(s);
+                            }
+                        }
+                        contentX.searchContent = lists;
+                        return AnvilGUI.Response.close();
+
+                    })
+                    .text("Insert text to search")
+                    .itemLeft(new ItemStack(XMaterial.COMPASS.parseMaterial()))
+                    .title(utils.formatString("&6&lSearch"))
+                    .plugin(main)
+                    .open(p);
+        }
+    }
+
+
     @Override
     public Inventory getInventory() {
         return null;
     }
-
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent e) {
@@ -175,6 +225,8 @@ public class dynamicGui implements InventoryHolder, Listener {
         else if(slot == 53 && !utils.isEmpty(item)) p.openInventory(processNextGui(inv, 1));
         else if(slot == 45 && !utils.isEmpty(item)) p.openInventory(processNextGui(inv, -1));
 
+        else if(e.getSlot() == 51 && searchOn)  searchAction(item);                             /* Search button */
+
         else {
             Response response;
             if (slot >= 0 && slot < rows2fill && !utils.isEmpty(item)) {
@@ -187,10 +239,9 @@ public class dynamicGui implements InventoryHolder, Listener {
 
             if(response.getResponse() == ResponseX.CLOSE) p.closeInventory();
             else if(response.getResponse() == ResponseX.UPDATE) {
-                new dynamicGui(p, contentS, title, back, rows2fill, contentAction,
-                        nonContentAction, addItems, isSearch, page);
+                new dynamicGui(p, contentX, title, back, rows2fill, contentAction,
+                        nonContentAction, addItems, searchOn, isSearch, page);
             }
-
         }
     }
 
@@ -204,18 +255,19 @@ public class dynamicGui implements InventoryHolder, Listener {
     public static class Builder {
 
         private Player p;
-        private Supplier<List<ItemStack>> content = null;
+        private contentX content = null;
         private Function<Integer, String> title = integer -> "";
         private Consumer<Player> back = player -> {};
         private Integer rows2fill = 45;
         private Function<ItemStack, Response> contentAction = itemStack -> {return null;};
         private Function<Integer, Response> nonContentAction = integer -> {return null;};
         private BiConsumer<Inventory, Integer> addItems = (itemStacks, integer) -> {};
+        private boolean searchOn = true;
         private boolean isSearch = false;
         private Integer page = 0;
 
         public Builder contents(Supplier<List<ItemStack>> content) {
-            this.content = content;
+            this.content = new contentX(content);
             return this;
         }
 
@@ -249,6 +301,11 @@ public class dynamicGui implements InventoryHolder, Listener {
             return this;
         }
 
+        public Builder setSearch(boolean status) {
+            searchOn = status;
+            return this;
+        }
+
         public Builder isSearch(boolean isSearch) {
             this.isSearch = isSearch;
             return this;
@@ -265,7 +322,7 @@ public class dynamicGui implements InventoryHolder, Listener {
             Validate.notNull(contentAction);
 
             return new dynamicGui(p, content, title, back, rows2fill, contentAction,
-                    nonContentAction, addItems, isSearch, page);
+                    nonContentAction, addItems, searchOn, isSearch, page);
         }
     }
 
