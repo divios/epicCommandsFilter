@@ -1,5 +1,7 @@
 package io.github.divios.epic_tabcompletefilter;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import io.github.divios.epic_tabcompletefilter.databaseUtils.databaseManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -18,6 +20,7 @@ import java.util.stream.Collectors;
 public class utils {
 
     private static final EpicCommandsFilter main = EpicCommandsFilter.getInstance();
+    private static final databaseManager dbManager = databaseManager.getInstance();
 
     public static void setDisplayName(ItemStack item, String name) {
         ItemMeta meta = item.getItemMeta();

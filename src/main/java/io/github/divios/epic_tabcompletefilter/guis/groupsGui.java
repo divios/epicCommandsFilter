@@ -36,7 +36,7 @@ public class groupsGui implements Listener, InventoryHolder {
                 "&7not perfect and cannot hook to", "&7all commands.", "", "&7If you want to add a new command",
                 "&7that does not appear on the default list", "&7then click here"));
 
-        ItemStack exit = new ItemStack(Material.OAK_SIGN);
+        ItemStack exit = XMaterial.OAK_SIGN.parseItem();
         utils.setDisplayName(exit, "&c&lExit");
 
         ItemStack reloadCommands = XMaterial.CRAFTING_TABLE.parseItem();

@@ -42,12 +42,12 @@ public class commandsGui {
                 .addItems((inventory, integer) -> setAllItems(inventory))
                 .nonContentAction(integer -> {
                     if(integer == 46) {
-                        dbManager.getFilters().get(groupId).clear();
+                        dbManager.clearAllFilters(groupId);
                         return dynamicGui.Response.update();
                     }
                     else if (integer == 47) {
-                        dbManager.getFilters().get(groupId).clear();
-                        dbManager.getFilters().get(groupId).addAll(commandList);
+                        dbManager.clearAllFilters(groupId);
+                        filters.addAll(commandList);
                         return dynamicGui.Response.update();
                     }
                     return dynamicGui.Response.nu();
@@ -72,10 +72,16 @@ public class commandsGui {
     }
 
     private void toggleMaterial(ItemStack item) {
+        String name = utils.trimString(item.getItemMeta().getDisplayName());
+
         if (item.getType() == XMaterial.LIGHT_BLUE_STAINED_GLASS_PANE.parseMaterial()) {
             item.setType(XMaterial.RED_STAINED_GLASS_PANE.parseMaterial());
+            dbManager.getFilters().get(groupId).add(name);
         }
-        else item.setType(XMaterial.LIGHT_BLUE_STAINED_GLASS_PANE.parseMaterial());
+        else {
+            item.setType(XMaterial.LIGHT_BLUE_STAINED_GLASS_PANE.parseMaterial());
+            dbManager.getFilters().get(groupId).remove(name);
+        }
     }
 
     private void setAllItems(Inventory inv) {

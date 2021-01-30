@@ -120,12 +120,8 @@ public class databaseManager {
                 9600L, 9600L); //9600
     }
 
-    public HashMap<String, List<String>> getFilters() {
-        HashMap<String, List<String>> aux = new HashMap<>(filters);
-        for(Map.Entry<String, List<String>> entry : aux.entrySet()) {
-            entry.getValue().remove("abosurdXboboq");
-        }
-        return aux;
+    public Map<String, List<String>> getFilters() {
+        return filters;
     }
 
     public ArrayList<String> getAddedCommands() {
@@ -134,8 +130,11 @@ public class databaseManager {
 
     public void createNewGroup(String group) {
         List<String> aux = new ArrayList<>();
-        aux.add("abosurdXboboq");
         filters.put(group, aux);
+    }
+
+    public void clearAllFilters(String groupId) {
+        filters.get(groupId).clear();
     }
 
 }
