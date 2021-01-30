@@ -35,6 +35,7 @@ public class customCmdsGui{
                 .contentAction(this::contentAction)
                 .nonContentAction(this::nonContentAction)
                 .title(integer -> "&6&lManage CustomCmds " + integer)
+                .setSearch(false)
                 .open(p);
     }
 
