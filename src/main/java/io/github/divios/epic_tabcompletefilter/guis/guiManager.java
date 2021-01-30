@@ -3,7 +3,6 @@ package io.github.divios.epic_tabcompletefilter.guis;
 import io.github.divios.epic_tabcompletefilter.EpicCommandsFilter;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 
 public class guiManager {
 

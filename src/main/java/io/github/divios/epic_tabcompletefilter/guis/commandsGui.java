@@ -60,11 +60,10 @@ public class commandsGui {
         List<ItemStack> itemsContents = new ArrayList<>();
 
         for(String s : commandList) {
-            ItemStack item = new ItemStack(Material.GRASS);
+            ItemStack item = XMaterial.LIGHT_BLUE_STAINED_GLASS_PANE.parseItem();
             utils.setDisplayName(item, "&f&l" + s);
             utils.setLore(item, Arrays.asList("&7Click to toggle"));
             if(filters.contains(s)) item.setType(XMaterial.RED_STAINED_GLASS_PANE.parseMaterial());
-            else item.setType(XMaterial.LIGHT_BLUE_STAINED_GLASS_PANE.parseMaterial());
 
             itemsContents.add(item);
         }

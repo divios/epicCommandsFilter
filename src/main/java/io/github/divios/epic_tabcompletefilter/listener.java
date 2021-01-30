@@ -9,7 +9,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandSendEvent;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class listener implements Listener {
 
